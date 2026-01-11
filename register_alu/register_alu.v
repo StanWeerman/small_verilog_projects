@@ -18,7 +18,8 @@ module register_file (r1a,r2a,r1d,r2d,wa,wd,reg_write,clk);
 endmodule
 
 module alu (input [7:0] a, input [7:0] b, output [7:0] c, input control, output c_out);
-    assign {c_out, sum} = control ? a+~b+control : a+b;
+    assign {c_out, c} = control ? a+~b+1 : a+b;
+    // assign c = a+b;
     // always @ (*) begin
     //     if (control == 0) begin
     //         {c_out, c} = a + b + control;
@@ -39,7 +40,7 @@ module cpu (input clk, input rst, input [15:0] instruction, input en);
 
     wire [7:0] alu_output;
     wire c_out;
-    alu alu (.a(r1d), .b(r2d), .c(alu_output), .control(instruction[1]), .c_out(c_out));
+    alu alu (.a(reg_1_data), .b(reg_2_data), .c(alu_output), .control(instruction[1]), .c_out(c_out));
 
     assign write_data = instruction[2] ? instruction[12:5] : alu_output;
 

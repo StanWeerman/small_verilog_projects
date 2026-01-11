@@ -70,6 +70,8 @@ module register_alu_top
 // DESIGN
     cpu cpu (.clk(sys_clk), .rst(Reset), .instruction(sw), .en(down));
 
+    assign LED = cpu.instruction;
+
     reg [2:0] display_reg;
     wire [7:0] display_reg_data = cpu.register_file.reg_file[display_reg];
 
@@ -88,8 +90,9 @@ module register_alu_top
     assign SSD0 = sw[3:0];
     assign SSD1 = sw[7:4];
     assign SSD2 = sw[11:8];
-    assign SSD3 = sw[15:12];
-    assign SSD4 = 4'b0000;
+    // assign SSD3 = sw[15:12];
+    assign SSD3 = cpu.write_data[3:0];
+    assign SSD4 = cpu.write_data[3:0];
     assign SSD5 = display_reg_data[3:0];
     assign SSD6 = display_reg_data[7:4];
     assign SSD7 = display_reg;
