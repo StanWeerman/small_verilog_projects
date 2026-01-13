@@ -64,6 +64,8 @@ module cpu (input clk, input rst, input [15:0] instruction, input en);
 
     assign write_data = instruction[2] ? instruction[12:5] : alu_output;
 
-    pc pc (.en(en), .clk(clk), .rstb(0), .jmp(instruction[3]), .jmp_address(instruction[12:5]),.pco());
+    wire jmp;
+    assign jmp = ~instruction[0] & instruction[3];
+    pc pc (.en(en), .clk(clk), .rstb(1), .jmp(jmp), .jmp_address(instruction[12:5]),.pco());
 
 endmodule;

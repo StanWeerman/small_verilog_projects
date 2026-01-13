@@ -73,15 +73,19 @@ module cpu_top
 
     ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instruction));
 
-    assign LED = cpu.instruction;
+    assign LED = instruction;
 
     reg [2:0] display_reg;
     wire [7:0] display_reg_data = cpu.register_file.reg_file[display_reg];
 
     always @(posedge board_clk, posedge Reset)
       begin
-        if (Reset)
+        if (Reset) begin
+            ins_mem.memory[0] = 16'b0000000000100101;
+            ins_mem.memory[1] = 16'b0000000000000001;
+            ins_mem.memory[2] = 16'b0000000000101000;
             display_reg <= 0;
+        end
         else if (left)
             display_reg <= display_reg - 1;
         else if (right)
@@ -90,12 +94,11 @@ module cpu_top
 
 // SSD (Seven Segment Display)
 
-    assign SSD0 = sw[3:0];
-    assign SSD1 = sw[7:4];
-    assign SSD2 = sw[11:8];
-    // assign SSD3 = sw[15:12];
-    assign SSD3 = cpu.write_data[3:0];
-    assign SSD4 = cpu.write_data[3:0];
+    assign SSD0 = instruction[3:0];
+    assign SSD1 = instruction[7:4];
+    assign SSD2 = cpu.write_data[3:0];
+    assign SSD3 = cpu.write_data[7:4];
+    assign SSD4 = ins_mem.a[3:0];
     assign SSD5 = display_reg_data[3:0];
     assign SSD6 = display_reg_data[7:4];
     assign SSD7 = display_reg;
