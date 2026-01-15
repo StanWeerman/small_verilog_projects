@@ -21,6 +21,33 @@ module register_alu_tb;
         end
     endtask
 
+    localparam [5:0]
+    MOVE = 5'b00101,
+    ADD = 5'b00001,
+    SUB = 5'b00011,
+    JMP = 5'b01000;
+
+
+    function [15:0] get_instruction (input [2:0] dest, src1, src2, input [7:0] val, input [5:0] instr);
+        begin
+            case (instr)
+                MOVE: get_instruction = {dest, val, MOVE};
+                ADD: get_instruction = {dest, src1, src2, 2'b00, ADD};
+                SUB: get_instruction = {dest, src1, src2, 2'b00, SUB};
+                JMP: get_instruction = {3'b000, val, JMP};
+                default: get_instruction = 16'b0000000000001000; // Jump to start
+            endcase
+        end
+    endfunction;
+
+    task do_instruction (input [2:0] dest, src1, src2, input [7:0] val, input [5:0] instr);
+        begin
+            instruction = get_instruction(dest, src1, src2, val, instr);
+            instr_clk();
+            $display ("[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
+        end
+    endtask;
+
     task move(input [2:0] dest, input [7:0] val);
         begin
             instruction = {dest, val, 5'b00101};
@@ -42,10 +69,12 @@ module register_alu_tb;
     initial begin
         init();
 
-        move(0, 1);
+        // move(0, 1);
+        do_instruction(0,0,0,1,MOVE);
 
         for (i=0; i<10; i++) begin
-            add(0, 0, 0);
+            // add(0, 0, 0);
+            do_instruction(0,0,0,0,ADD);
         end
     end
 
