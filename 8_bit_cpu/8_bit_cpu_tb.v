@@ -14,10 +14,8 @@ module register_alu_tb;
 
     task instr_clk();
         begin
-            #1;
-            clk = 1;
-            #1;
-            clk = 0;
+            #1 clk = 1;
+            #1 clk = 0;
         end
     endtask
 
