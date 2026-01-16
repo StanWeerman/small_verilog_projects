@@ -21,7 +21,7 @@ module register_alu_tb;
         end
     endtask
 
-    localparam [5:0]
+    localparam [4:0]
     MOVE = 5'b00101,
     ADD = 5'b00001,
     SUB = 5'b00011,
