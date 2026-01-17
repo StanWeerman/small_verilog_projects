@@ -38,17 +38,20 @@ module register_file (r1a,r2a,r1d,r2d,wa,wd,reg_write,clk);
     end
 endmodule
 
-module alu (input [7:0] a, input [7:0] b, output [7:0] c, input control, output c_out);
-    assign {c_out, c} = control ? a+~b+1 : a+b;
+module alu (input [7:0] a, input [7:0] b, output reg [7:0] c, input control, output reg c_out);
+    // assign {c_out, c} = control ? a+~b+1 : a+b;
     // assign c = a+b;
-    // always @ (*) begin
-    //     if (control == 0) begin
-    //         {c_out, c} = a + b + control;
-    //     end
-    //     else begin
-    //         {c_out, c} = a + ~b + control;
-    //     end
-    // end
+
+    always @ (*) begin
+        {c_out, c} = a + (b^{8{control}}) + control;
+
+        // if (control == 0) begin
+        //     {c_out, c} = a + b + control;
+        // end
+        // else begin
+        //     {c_out, c} = a + ~b + control;
+        // end
+    end
 endmodule;
 
 module cpu (input clk, input rst, input [15:0] instruction, input en);

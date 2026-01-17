@@ -69,6 +69,10 @@ module register_alu_tb;
 
         // move(0, 1);
         do_instruction(0,0,0,1,MOVE);
+        do_instruction(1,0,0,1,MOVE);
+
+        do_instruction(0,0,0,0,ADD);
+        do_instruction(0,0,1,0,SUB);
 
         for (i=0; i<10; i++) begin
             // add(0, 0, 0);
