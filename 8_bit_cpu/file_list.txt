@@ -1,0 +1,2 @@
+8_bit_cpu/8_bit_cpu.v
+8_bit_cpu/8_bit_cpu_tb.v

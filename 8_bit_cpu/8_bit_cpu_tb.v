@@ -1,16 +1,20 @@
 module register_alu_tb;
 
+    integer output_file;
     reg clk, rst, en;
     reg [15:0] instruction;
 
     cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en));
 
-    function void init();
-       	clk = 0;
-        rst = 0;
-        en  = 1;
-        instruction = 16'b000_00000001_00101;
-    endfunction
+    task init();
+        begin
+           	output_file = $fopen ("output_results.txt", "w");
+           	clk = 0;
+            rst = 0;
+            en  = 1;
+            instruction = 16'b000_00000001_00101;
+        end
+    endtask
 
     task instr_clk();
         begin
@@ -42,7 +46,7 @@ module register_alu_tb;
         begin
             instruction = get_instruction(dest, src1, src2, val, instr);
             instr_clk();
-            $display ("[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
+            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask;
 
@@ -50,7 +54,7 @@ module register_alu_tb;
         begin
             instruction = {dest, val, 5'b00101};
             instr_clk();
-            $display ("[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
+            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask
 
@@ -58,7 +62,7 @@ module register_alu_tb;
         begin
             instruction = {dest, src1, src2, 7'b0000001};
             instr_clk();
-            $display ("[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
+            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask
 
