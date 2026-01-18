@@ -81,9 +81,14 @@ module cpu_top
     always @(posedge board_clk, posedge Reset)
       begin
         if (Reset) begin
+            // ins_mem.memory[0] = 16'b0000000000100101;
+            // ins_mem.memory[1] = 16'b0000000000000001;
+            // ins_mem.memory[2] = 16'b0000000000101000;
             ins_mem.memory[0] = 16'b0000000000100101;
-            ins_mem.memory[1] = 16'b0000000000000001;
-            ins_mem.memory[2] = 16'b0000000000101000;
+            ins_mem.memory[1] = 16'b0011111111100101;
+            ins_mem.memory[2] = 16'b0000000000000001;
+            ins_mem.memory[3] = 16'b0010000010000011;
+            ins_mem.memory[4] = 16'b0000000001001000;
             display_reg <= 0;
         end
         else if (left)
