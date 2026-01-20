@@ -55,7 +55,6 @@ fi
 vvp $name/build/$name > $name/build/vvp.txt + $COMMANDS
 
 if [ $DUMPC -eq 1 ]; then
-    echo "huh"
     cat $name/build/vvp.txt
 fi
 if [ -f output_results.txt ]
