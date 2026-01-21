@@ -1,18 +1,27 @@
 module register_alu_tb;
 
     integer output_file;
-    reg clk, rst, en;
-    reg [15:0] instruction;
+    integer input_file;
+    integer i;
 
+    reg clk, rst, en;
+    reg from_file;
+    wire [15:0] instruction = from_file ? instrution_mem : instrution_input;
+
+    reg [15:0] instrution_input;
+    wire [15:0] instrution_mem;
     cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en));
+    ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instrution_mem));
 
     task init();
         begin
+            input_file = $fopen ("8_bit_cpu/assembler/tests/build/add", "r");
            	output_file = $fopen ("output_results.txt", "w");
            	clk = 0;
             rst = 0;
             en  = 1;
-            instruction = 16'b000_00000001_00101;
+            from_file = 0;
+            instrution_input = 16'b000_00000001_00101;
         end
     endtask
 
@@ -44,7 +53,7 @@ module register_alu_tb;
 
     task do_instruction (input [2:0] dest, src1, src2, input [7:0] val, input [5:0] instr);
         begin
-            instruction = get_instruction(dest, src1, src2, val, instr);
+            instrution_input = get_instruction(dest, src1, src2, val, instr);
             instr_clk();
             $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
@@ -52,7 +61,7 @@ module register_alu_tb;
 
     task move(input [2:0] dest, input [7:0] val);
         begin
-            instruction = {dest, val, 5'b00101};
+            instrution_input = {dest, val, 5'b00101};
             instr_clk();
             $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
@@ -60,13 +69,39 @@ module register_alu_tb;
 
     task add(input [2:0] dest, src1, src2);
         begin
-            instruction = {dest, src1, src2, 7'b0000001};
+            instrution_input = {dest, src1, src2, 7'b0000001};
             instr_clk();
             $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask
 
-    integer i;
+    integer code;
+
+    task set_memory ();
+        begin
+
+            if (input_file == 0) begin
+                $display("Error: Could not open file.");
+                $finish;
+            end
+
+            // Read data from the file into memory array
+            code = $fread(ins_mem.memory, input_file, 0, 8);
+            if (code == 0) begin
+                $display("Error: Could not read data.");
+            end
+            else begin
+                $display("Read %0d bytes of data.", code);
+            end
+
+            // Display the contents of the first few memory locations
+            for (i = 0; i < 8; i++) begin
+                $display("mem[%0d] = %h", i, ins_mem.memory[i]);
+            end
+
+            $fclose(input_file);
+        end
+    endtask
 
     initial begin
         init();
@@ -81,6 +116,53 @@ module register_alu_tb;
         for (i=0; i<10; i++) begin
             // add(0, 0, 0);
             do_instruction(0,0,0,0,ADD);
+        end
+
+        en = 0;
+        rst = 1;
+        $fdisplay(output_file, "Starting Instruction Memory Run");
+
+        set_memory();
+        from_file = 1;
+        #1 clk = 1;
+        #1 clk = 0;
+        en = 1;
+        rst = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        // #1000;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+        #1 clk = 1;
+        #1 clk = 0;
+    end
+
+    // always begin
+    //     if (from_file == 0) begin
+    //         #10 clk = ~clk;
+    //     end
+    // end
+
+    always @ (posedge clk) begin
+        if (from_file) begin
+            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h pc=0x%00h", $time, cpu.register_file.reg_file[0], cpu.pc.pco);
+            $fdisplay (output_file, "[$display] time=%0t $1=0x%00h pc=0x%00h", $time, cpu.register_file.reg_file[1], cpu.pc.pco);
         end
     end
 

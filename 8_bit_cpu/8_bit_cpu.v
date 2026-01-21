@@ -69,6 +69,6 @@ module cpu (input clk, input rst, input [15:0] instruction, input en);
 
     wire jmp;
     assign jmp = ~instruction[0] & instruction[3];
-    pc pc (.en(en), .clk(clk), .rstb(1'b1), .jmp(jmp), .jmp_address(instruction[12:5]),.pco());
+    pc pc (.en(en), .clk(clk), .rstb(~rst), .jmp(jmp), .jmp_address(instruction[12:5]),.pco());
 
 endmodule;
