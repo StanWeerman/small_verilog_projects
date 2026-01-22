@@ -1,4 +1,4 @@
-module register_alu_tb;
+module cpu_tb;
 
     integer output_file;
     integer input_file;
