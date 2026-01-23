@@ -1,34 +1,44 @@
 module cpu_tb;
 
     integer output_file;
+    integer output_reg_file;
     integer input_file;
     integer i;
-
+    event end_clk;
+    integer clk_count;
     reg clk, rst, en;
     reg from_file;
-    wire [15:0] instruction = from_file ? instrution_mem : instrution_input;
+    wire [15:0] instruction = from_file ? instruction_mem : instruction_input;
 
-    reg [15:0] instrution_input;
-    wire [15:0] instrution_mem;
+    reg [15:0] instruction_input;
+    wire [15:0] instruction_mem;
     cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en));
-    ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instrution_mem));
+    ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instruction_mem));
+
+    always #10 clk = ~clk;
+
+    always #1 clk_count +=1;
 
     task init();
         begin
             input_file = $fopen ("8_bit_cpu/assembler/tests/build/add", "r");
            	output_file = $fopen ("output_results.txt", "w");
+            output_reg_file = $fopen ("8_bit_cpu/build/output_reg_file.txt", "w");
            	clk = 0;
             rst = 0;
-            en  = 1;
+            en  = 0;
+            clk_count = 0;
             from_file = 0;
-            instrution_input = 16'b000_00000001_00101;
+            // instruction_input = 16'b000_00000001_00101;
+            instruction_input = 16'b0000_0000_0000_0000;
         end
     endtask
 
-    task instr_clk();
+    task instr_en();
         begin
-            #1 clk = 1;
-            #1 clk = 0;
+            en = 1;
+            @(posedge clk);
+            en = 0;
         end
     endtask
 
@@ -53,24 +63,25 @@ module cpu_tb;
 
     task do_instruction (input [2:0] dest, src1, src2, input [7:0] val, input [5:0] instr);
         begin
-            instrution_input = get_instruction(dest, src1, src2, val, instr);
-            instr_clk();
-            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
+            @(negedge clk);
+            instruction_input = get_instruction(dest, src1, src2, val, instr);
+            instr_en();
+            // $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask;
 
     task move(input [2:0] dest, input [7:0] val);
         begin
-            instrution_input = {dest, val, 5'b00101};
-            instr_clk();
+            instruction_input = {dest, val, 5'b00101};
+            instr_en();
             $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask
 
     task add(input [2:0] dest, src1, src2);
         begin
-            instrution_input = {dest, src1, src2, 7'b0000001};
-            instr_clk();
+            instruction_input = {dest, src1, src2, 7'b0000001};
+            instr_en();
             $fdisplay (output_file, "[$display] time=%0t $0=0x%00h", $time, cpu.register_file.reg_file[dest]);
         end
     endtask
@@ -79,7 +90,7 @@ module cpu_tb;
 
     task set_memory ();
         begin
-
+            $display("Test");
             if (input_file == 0) begin
                 $display("Error: Could not open file.");
                 $finish;
@@ -120,37 +131,19 @@ module cpu_tb;
 
         en = 0;
         rst = 1;
-        $fdisplay(output_file, "Starting Instruction Memory Run");
+        $fdisplay(output_file, "--- Starting Instruction Memory Run ---");
+        $fdisplay(output_reg_file, "--- Starting Instruction Memory Run ---");
+
 
         set_memory();
         from_file = 1;
-        #1 clk = 1;
-        #1 clk = 0;
+
+        @(posedge clk);
         en = 1;
         rst = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        // #1000;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
-        #1 clk = 1;
-        #1 clk = 0;
+
+        #100;
+        $finish();
     end
 
     // always begin
@@ -158,12 +151,19 @@ module cpu_tb;
     //         #10 clk = ~clk;
     //     end
     // end
+    always@(negedge clk) begin
+        $fdisplay (output_reg_file, "-%4t: |0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|", $time, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
+    end
 
     always @ (posedge clk) begin
-        if (from_file) begin
-            $fdisplay (output_file, "[$display] time=%0t $0=0x%00h pc=0x%00h", $time, cpu.register_file.reg_file[0], cpu.pc.pco);
-            $fdisplay (output_file, "[$display] time=%0t $1=0x%00h pc=0x%00h", $time, cpu.register_file.reg_file[1], cpu.pc.pco);
-        end
+        // if (from_file) begin
+        // if (en) begin
+            $fdisplay (output_reg_file, "+%4t: |0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|", $time, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
+            $fdisplay (output_file, "%4t: |$0=0b%16b|pc=0x%00h|en=%1b", $time, instruction, cpu.pc.pco, en);
+        // end
+        ->end_clk;
+            // $fdisplay (output_file, "[$display] time=%0t $1=0x%00h pc=0x%00h", $time, cpu.register_file.reg_file[1], cpu.pc.pco);
+        // end
     end
 
     initial begin
