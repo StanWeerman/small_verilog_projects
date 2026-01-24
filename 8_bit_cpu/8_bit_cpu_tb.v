@@ -14,7 +14,7 @@ module cpu_tb;
     wire [15:0] instruction_mem;
     cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en), .data_in(ram.d_out));
     ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instruction_mem));
-    ram ram (.clk(clk), .a(cpu.address), .d_in(cpu.write_data), .d_out(), .read(cpu.cu.mem_rd), .write(cpu.cu.mem_wr), .stall());
+    ram #(.DISPLAY(1))  ram (.clk(clk), .a(cpu.address), .d_in(cpu.write_data), .d_out(), .read(cpu.cu.mem_rd), .write(cpu.cu.mem_wr), .stall());
 
     always #10 clk = ~clk;
 

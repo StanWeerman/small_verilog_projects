@@ -37,6 +37,14 @@ module register_file (r1a,r2a,r1d,r2d,wa,wd,reg_write,clk);
         end
     end
 
+    generate
+      genvar idx;
+      for(idx = 0; idx < 8; idx = idx+1) begin: register
+        wire [7:0] tmp;
+        assign tmp = reg_file[idx];
+      end
+    endgenerate
+
 endmodule
 
 module alu (input [7:0] a, input [7:0] b, output reg [7:0] c, input control, output reg c_out);

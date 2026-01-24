@@ -15,4 +15,16 @@ module ram(clk, a, d_in, d_out, read, write, stall);
             memory[a] = d_in;
         end
     end
+
+    parameter DISPLAY = 0;
+
+    generate
+    if (DISPLAY) begin
+        genvar idx;
+        for(idx = 0; idx < 256; idx = idx+1) begin: register
+            wire [7:0] word;
+            assign word = memory[idx];
+        end
+    end
+    endgenerate
 endmodule
