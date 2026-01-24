@@ -1,11 +1,14 @@
 use std::{collections::HashMap, panic};
 
 type Imm = u8;
+type Addr = u8;
 #[derive(Debug)]
 pub enum Instruction {
     Mov(Reg, Imm),
     Add(Reg, Reg, Reg),
     Sub(Reg, Reg, Reg),
+    Store(Reg, Addr),
+    Load(Reg, Addr),
     Jmp(Imm),
 }
 
@@ -15,7 +18,7 @@ impl Instruction {
         match parts[0] {
             "mov" => {
                 if parts.len() == 3 {
-                    Instruction::Mov(Reg::from_str(parts[1]), (imm_from_str(parts[2])))
+                    Instruction::Mov(Reg::from_str(parts[1]), imm_from_str(parts[2]))
                 } else {
                     panic!("Invalid Mov: {}", instr);
                 }
@@ -42,6 +45,20 @@ impl Instruction {
                     panic!("Invalid Sub: {}", instr);
                 }
             }
+            "store" => {
+                if parts.len() == 3 {
+                    Instruction::Store(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+                } else {
+                    panic!("Invalid Store: {}", instr);
+                }
+            }
+            "load" => {
+                if parts.len() == 3 {
+                    Instruction::Load(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+                } else {
+                    panic!("Invalid Load: {}", instr);
+                }
+            }
             "jmp" => {
                 if parts.len() == 2 {
                     if let Some(address) = label_map.get(&parts[1][1..]) {
@@ -63,14 +80,16 @@ impl Instruction {
     }
     pub fn get_u16(&self) -> u16 {
         let instr: u16 = match self {
-            Instruction::Mov(reg, imm) => reg.get_bits(0) | imm_get_bits(imm) | 0b00101,
+            Instruction::Mov(reg, imm) => reg.get_bits(0) | imm_get_bits(imm) | 0b00011,
             Instruction::Add(reg0, reg1, reg2) => {
                 reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0000001
             }
             Instruction::Sub(reg0, reg1, reg2) => {
-                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0000011
+                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0000101
             }
-            Instruction::Jmp(imm) => imm_get_bits(imm) | 0b01000,
+            Instruction::Store(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00010,
+            Instruction::Load(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00100,
+            Instruction::Jmp(imm) => imm_get_bits(imm) | 0b10000,
         };
         // println!("{:#018b} {:#06X}, {:05}", instr, instr, instr);
         return instr;
