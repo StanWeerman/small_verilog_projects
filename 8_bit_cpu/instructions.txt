@@ -1,0 +1,37 @@
+Codes:
+    Jump
+    Branch
+    MemRd
+    MemWrite
+    ALU
+    RegWrite
+    MemtoReg
+Instruction List:
+        NOP - Do Nothing    0000x0x
+    ALU:
+        ADD: R0 = R1 + R2   0000110
+        SUB: R0 = R1 - R2   0000110
+        AND: R0 = R1 & R2   0000110
+        ORR: R0 = R1 | R2   0000110
+        ASL: R0 = R1 << R2  0000110
+        LSR: R0 = R1 >> R2  0000110
+        EOR: R0 = R1 ^ R2   0000110
+        ROL: R0 = R1 >o R2  0000110
+        ROR: R0 = R1 o< R2  0000110
+        MOV: R0 = IMM       0000110
+    Branch:
+        BEQ: If Z -> IMM    0100x0x
+        BNE: If ~Z -> IMM   0100x0x
+    Jump:
+        JMP: -> IMM         1x00x0x
+        JSR(?): -> IMM, push?
+        RTS(?): POP, -> POP?
+        RTI(?): POP, -> POP?
+    Interrupt:
+        BRK: -> ISR?
+    Memory:
+        LD: R0 = Mem[IMM]   0010x11
+        ST: Mem[IMM = R0]   0001x11
+    Stack(?):
+        PSH:
+        POP:
