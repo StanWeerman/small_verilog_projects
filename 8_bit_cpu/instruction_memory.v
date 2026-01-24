@@ -1,7 +1,7 @@
 module ins_mem(a,d_out);
-    input [5:0]a;
+    input [7:0]a;
     output [15:0]d_out;
-    reg [15:0] memory [0:63];
+    reg [15:0] memory [0:255];
 
     integer i;
 

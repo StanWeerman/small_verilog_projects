@@ -12,8 +12,9 @@ module cpu_tb;
 
     reg [15:0] instruction_input;
     wire [15:0] instruction_mem;
-    cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en));
+    cpu cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en), .data_in(ram.d_out));
     ins_mem ins_mem (.a(cpu.pc.pco), .d_out(instruction_mem));
+    ram ram (.clk(clk), .a(cpu.address), .d_in(cpu.write_data), .d_out(), .read(cpu.cu.mem_rd), .write(cpu.cu.mem_wr), .stall());
 
     always #10 clk = ~clk;
 
@@ -107,7 +108,7 @@ module cpu_tb;
 
             // Display the contents of the first few memory locations
             for (i = 0; i < 8; i++) begin
-                $display("mem[%0d] = %h", i, ins_mem.memory[i]);
+                $display("ins_mem[%0d] = %h", i, ins_mem.memory[i]);
             end
 
             $fclose(input_file);
@@ -117,17 +118,19 @@ module cpu_tb;
     initial begin
         init();
 
+        $monitor ("[$monitor] time=%0t mem[1]=0x%00h", $time, ram.memory[1]);
+
         // move(0, 1);
-        do_instruction(0,0,0,1,MOVE);
-        do_instruction(1,0,0,1,MOVE);
+        // do_instruction(0,0,0,1,MOVE);
+        // do_instruction(1,0,0,1,MOVE);
 
-        do_instruction(0,0,0,0,ADD);
-        do_instruction(0,0,1,0,SUB);
+        // do_instruction(0,0,0,0,ADD);
+        // do_instruction(0,0,1,0,SUB);
 
-        for (i=0; i<10; i++) begin
-            // add(0, 0, 0);
-            do_instruction(0,0,0,0,ADD);
-        end
+        // for (i=0; i<10; i++) begin
+        //     // add(0, 0, 0);
+        //     do_instruction(0,0,0,0,ADD);
+        // end
 
         en = 0;
         rst = 1;
@@ -142,7 +145,8 @@ module cpu_tb;
         en = 1;
         rst = 0;
 
-        #100;
+        #500;
+        $display ("[$monitor] time=%0t mem[1]=0x%00h", $time, ram.memory[1]);
         $finish();
     end
 
@@ -167,7 +171,8 @@ module cpu_tb;
     end
 
     initial begin
-      $dumpvars;
+      $dumpvars(0, cpu_tb);
+      // $dumpall;
       $dumpfile("dump.vcd");
     end
 
