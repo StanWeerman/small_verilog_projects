@@ -41,8 +41,12 @@ if [ -e $name/build ]
 then
     rm -r $name/build
 fi
-
 mkdir $name/"build"
+if [ -e build ]
+then
+    rm -r build
+fi
+
 echo "------Start------"
 
 if [ -f $name/file_list.txt ]
@@ -70,7 +74,12 @@ if [ -f dump.vcd ]
 then
     mv dump.vcd $name/build
     if [ $WAVE -eq 1 ]; then
-        nohup gtkwave $name/build/dump.vcd > $name/build/wave.txt &
+        if [ -f $name/wave_names.txt ]; then
+            mkdir "build"
+            cp $name/wave_names.txt build/wave_names.txt
+            nohup gtkwave $name/build/dump.vcd --script=add_waves.tcl s > $name/build/wave.txt &
+        else nohup gtkwave $name/build/dump.vcd --script=add_waves.tcl s > $name/build/wave.txt &
+        fi
     fi
 fi
 
