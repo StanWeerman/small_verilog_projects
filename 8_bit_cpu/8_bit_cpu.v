@@ -37,31 +37,43 @@ module register_file (r1a,r2a,r1d,r2d,wa,wd,reg_write,clk);
         end
     end
 
+    parameter WAVE = 0;
+    genvar idx;
     generate
-      genvar idx;
-      for(idx = 0; idx < 8; idx = idx+1) begin: register
-        wire [7:0] tmp;
-        assign tmp = reg_file[idx];
-      end
+        if (WAVE) begin
+                for (idx = 0; idx < 8; idx = idx + 1) begin
+                    initial $dumpvars(0, reg_file[idx]);
+                end
+        end
     endgenerate
 
 endmodule
 
-module alu (input [7:0] a, input [7:0] b, output reg [7:0] c, input control, output reg c_out);
+module alu (input [7:0] a, input [7:0] b, output reg [7:0] c, input [6:0] control, output reg c_out);
     // assign {c_out, c} = control ? a+~b+1 : a+b;
     // assign c = a+b;
 
-    always @ (*) begin
-        {c_out, c} = a + (b^{8{control}}) + control;
+    alu_cu alu_cu(.control(control));
 
-        // if (control == 0) begin
-        //     {c_out, c} = a + b + control;
-        // end
-        // else begin
-        //     {c_out, c} = a + ~b + control;
-        // end
+
+    always @ (*) begin
+        if (alu_cu.and_or) begin
+            c_out = 0;
+            c = alu_cu.and_ ? a & b : a | b;
+        end
+        {c_out, c} = a + (b^{8{alu_cu.sign}}) + alu_cu.sign;
     end
 endmodule;
+
+module alu_cu(input [6:0] control);
+    wire mov = control[1];
+    wire sign = control[2];
+    wire add = ~control[2];
+    wire sub = control[2];
+    wire and_or = control[3];
+    wire and_ = control[2];
+    wire or_ = ~control[2];
+endmodule
 
 module cu(input [4:0] control);
     wire jump = alu ? 0 : control[4];
@@ -73,25 +85,19 @@ module cu(input [4:0] control);
     wire memtoreg = ~alu;
 endmodule
 
-module alu_cu(input [6:0] alu_control);
-    wire mov = alu_control[1];
-    wire add = ~alu_control[2];
-    wire sub = alu_control[2];
-endmodule
-
 module cpu (input clk, input rst, input [15:0] instruction, input en, input [7:0] data_in);
+    parameter WAVE = 0;
 
     wire [7:0] reg_1_data, reg_2_data;
     reg [7:0] write_data;
 
     cu cu(.control(instruction[4:0]));
-    alu_cu alu_cu(.alu_control(instruction[6:0]));
 
-    register_file register_file (.r1a(instruction[12:10]), .r2a(instruction[9:7]), .r1d(reg_1_data), .r2d(reg_2_data), .wa(instruction[15:13]), .wd(write_data), .reg_write(cu.reg_wr & en), .clk(clk));
+    register_file #(.WAVE(1)) register_file (.r1a(instruction[12:10]), .r2a(instruction[9:7]), .r1d(reg_1_data), .r2d(reg_2_data), .wa(instruction[15:13]), .wd(write_data), .reg_write(cu.reg_wr & en), .clk(clk));
 
     wire [7:0] alu_output;
     wire c_out;
-    alu alu (.a(reg_1_data), .b(reg_2_data), .c(alu_output), .control(alu_cu.sub), .c_out(c_out));
+    alu alu (.a(reg_1_data), .b(reg_2_data), .c(alu_output), .control(instruction[6:0]), .c_out(c_out));
 
     // assign write_data = instruction[2] ? instruction[12:5] : alu_output;
 
@@ -100,7 +106,7 @@ module cpu (input clk, input rst, input [15:0] instruction, input en, input [7:0
             write_data = cu.mem_rd ? data_in : reg_1_data;
         end
         else begin
-            write_data = alu_cu.mov ? instruction[12:5] : alu_output;
+            write_data = alu.alu_cu.mov ? instruction[12:5] : alu_output;
         end
     end
 

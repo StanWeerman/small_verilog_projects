@@ -14,4 +14,14 @@ module ins_mem(a,d_out);
     // end
 
     assign d_out = memory[a];
+
+    parameter WAVE = 0;
+    genvar idx;
+    generate
+        if (WAVE) begin
+                for (idx = 0; idx < 256; idx = idx + 1) begin
+                    initial $dumpvars(0, memory[idx]);
+                end
+        end
+    endgenerate
 endmodule

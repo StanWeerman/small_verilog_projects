@@ -16,15 +16,14 @@ module ram(clk, a, d_in, d_out, read, write, stall);
         end
     end
 
-    parameter DISPLAY = 0;
 
+    parameter WAVE = 0;
+    genvar idx;
     generate
-    if (DISPLAY) begin
-        genvar idx;
-        for(idx = 0; idx < 256; idx = idx+1) begin: register
-            wire [7:0] word;
-            assign word = memory[idx];
+        if (WAVE) begin
+                for (idx = 0; idx < 256; idx = idx + 1) begin
+                    initial $dumpvars(0, memory[idx]);
+                end
         end
-    end
     endgenerate
 endmodule
