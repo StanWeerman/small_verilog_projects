@@ -7,8 +7,10 @@ pub enum Instruction {
     Mov(Reg, Imm),
     Add(Reg, Reg, Reg),
     Sub(Reg, Reg, Reg),
-    Store(Reg, Addr),
-    Load(Reg, Addr),
+    And(Reg, Reg, Reg),
+    Or(Reg, Reg, Reg),
+    St(Reg, Addr),
+    Ld(Reg, Addr),
     Jmp(Imm),
 }
 
@@ -45,18 +47,40 @@ impl Instruction {
                     panic!("Invalid Sub: {}", instr);
                 }
             }
-            "store" => {
-                if parts.len() == 3 {
-                    Instruction::Store(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+            "and" => {
+                if parts.len() == 4 {
+                    Instruction::And(
+                        Reg::from_str(parts[1]),
+                        Reg::from_str(parts[2]),
+                        Reg::from_str(parts[3]),
+                    )
                 } else {
-                    panic!("Invalid Store: {}", instr);
+                    panic!("Invalid And: {}", instr);
                 }
             }
-            "load" => {
-                if parts.len() == 3 {
-                    Instruction::Load(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+            "or" => {
+                if parts.len() == 4 {
+                    Instruction::Or(
+                        Reg::from_str(parts[1]),
+                        Reg::from_str(parts[2]),
+                        Reg::from_str(parts[3]),
+                    )
                 } else {
-                    panic!("Invalid Load: {}", instr);
+                    panic!("Invalid Or: {}", instr);
+                }
+            }
+            "st" => {
+                if parts.len() == 3 {
+                    Instruction::St(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+                } else {
+                    panic!("Invalid St: {}", instr);
+                }
+            }
+            "ld" => {
+                if parts.len() == 3 {
+                    Instruction::Ld(Reg::from_str(parts[1]), imm_from_str(parts[2]))
+                } else {
+                    panic!("Invalid Ld: {}", instr);
                 }
             }
             "jmp" => {
@@ -87,8 +111,14 @@ impl Instruction {
             Instruction::Sub(reg0, reg1, reg2) => {
                 reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0000101
             }
-            Instruction::Store(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00010,
-            Instruction::Load(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00100,
+            Instruction::And(reg0, reg1, reg2) => {
+                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0001101
+            }
+            Instruction::Or(reg0, reg1, reg2) => {
+                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b0001001
+            }
+            Instruction::St(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00010,
+            Instruction::Ld(reg0, addr) => reg0.get_bits(0) | imm_get_bits(addr) | 0b00100,
             Instruction::Jmp(imm) => imm_get_bits(imm) | 0b10000,
         };
         // println!("{:#018b} {:#06X}, {:05}", instr, instr, instr);
