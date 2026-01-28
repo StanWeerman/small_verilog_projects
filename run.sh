@@ -29,7 +29,7 @@ do
     esac
 done
 
-if [ -f $name/$name.v ]
+if [ -e $name ]
 then
     echo "Running '$name':"
 else
