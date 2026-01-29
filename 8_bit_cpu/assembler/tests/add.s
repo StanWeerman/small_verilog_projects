@@ -1,7 +1,9 @@
 MAIN:
-mov r0, #1
-st r0, #01
-ld r2, #01
+mov r1, #0
+mov r2, #1
+mov r0, #5
+st r0, r1, r2
+ld r2, r1, r2
 mov r3, #241
 mov r4, #31
 and r5, r3, r4
