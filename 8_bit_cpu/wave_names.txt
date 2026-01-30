@@ -3,6 +3,9 @@ rst
 en
 instruction
 pco
+reg_1_data
+reg_2_data
+address
 reg_file[0][7:0]
 reg_file[1][7:0]
 reg_file[2][7:0]
@@ -12,3 +15,4 @@ reg_file[5][7:0]
 reg_file[6][7:0]
 reg_file[7][7:0]
 memory[1][7:0]
+test

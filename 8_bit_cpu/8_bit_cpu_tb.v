@@ -12,9 +12,10 @@ module cpu_tb;
 
     reg [15:0] instruction_input;
     wire [15:0] instruction_mem;
-    cpu #(.WAVE(1)) cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en), .data_in(ram.d_out));
+    wire [7:0] cpu_d_out;
+    cpu #(.WAVE(1)) cpu (.clk(clk), .rst(rst), .instruction(instruction), .en(en), .data_in(ram.d_out), .data_out(cpu_d_out));
     ins_mem #(.WAVE(1)) ins_mem (.a(cpu.pc.pco), .d_out(instruction_mem));
-    ram #(.WAVE(1))  ram (.clk(clk), .a(cpu.address), .d_in(cpu.write_data), .d_out(), .read(cpu.cu.mem_rd), .write(cpu.cu.mem_wr), .stall());
+    ram #(.WAVE(1))  ram (.clk(clk), .a(cpu.address), .d_in(cpu_d_out), .d_out(), .read(cpu.cu.mem_rd), .write(cpu.cu.mem_wr), .stall());
 
     always #10 clk = ~clk;
 
@@ -98,7 +99,7 @@ module cpu_tb;
             end
 
             // Read data from the file into memory array
-            code = $fread(ins_mem.memory, input_file, 0, 8);
+            code = $fread(ins_mem.memory, input_file, 0, 65355);
             if (code == 0) begin
                 $display("Error: Could not read data.");
             end
@@ -107,7 +108,7 @@ module cpu_tb;
             end
 
             // Display the contents of the first few memory locations
-            for (i = 0; i < 8; i++) begin
+            for (i = 0; i < code; i++) begin
                 $display("ins_mem[%0d] = %h", i, ins_mem.memory[i]);
             end
 
