@@ -9,29 +9,29 @@ Codes:
 Instruction List:
         NOP - Do Nothing    0000x0x
     ALU:
-        ADD: R0 = R1 + R2   0000110
-        SUB: R0 = R1 - R2   0000110
-        AND: R0 = R1 & R2   0000110
-        ORR: R0 = R1 | R2   0000110
-        ASL: R0 = R1 << R2  0000110
-        LSR: R0 = R1 >> R2  0000110
-        EOR: R0 = R1 ^ R2   0000110
-        ROL: R0 = R1 >o R2  0000110
-        ROR: R0 = R1 o< R2  0000110
-        MOV: R0 = IMM       0000110
+        ADD: R0 = R1 + R2   0000110 00
+        SUB: R0 = R1 - R2   0000110 10
+        AND: R0 = R1 & R2   0000110 100
+        OR: R0 = R1 | R2    0000110 000
+        ASL: R0 = R1 << R2  0000110 0
+        LSR: R0 = R1 >> R2  0000110 0
+        EOR: R0 = R1 ^ R2   0000110 0
+        ROL: R0 = R1 >o R2  0000110 0
+        ROR: R0 = R1 o< R2  0000110 0
+        MOV: R0 = IMM       0000110 1
     Branch:
-        BEQ: If Z -> IMM    0100x0x
-        BNE: If ~Z -> IMM   0100x0x
+        BEQ: R0=Z -> R1,R2  0100x0x
+        BNE: R0=~Z -> R1,R2 0100x0x
     Jump:
-        JMP: -> IMM         1x00x0x
+        JMP: -> R1<<8 | R2  1x00x0x
         JSR(?): -> IMM, push?
         RTS(?): POP, -> POP?
         RTI(?): POP, -> POP?
     Interrupt:
         BRK: -> ISR?
     Memory:
-        LD: R0 = Mem[IMM]   0010x11
-        ST: Mem[IMM = R0]   0001x11
+        LD: R0 = Mem[R1,R2] 0010x11
+        ST: Mem[R1,R2] = R0 0001x11
     Stack(?):
         PSH:
         POP:
