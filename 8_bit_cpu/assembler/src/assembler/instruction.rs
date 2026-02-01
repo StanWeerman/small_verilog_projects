@@ -11,7 +11,9 @@ pub enum Instruction {
     Or(Reg, Reg, Reg),
     St(Reg, Reg, Reg),
     Ld(Reg, Reg, Reg),
-    Jmp(Imm),
+    Jmp(Reg, Reg),
+    Beq(Reg, Reg, Reg),
+    Bne(Reg, Reg, Reg),
 }
 
 impl Instruction {
@@ -92,15 +94,38 @@ impl Instruction {
                 }
             }
             "jmp" => {
-                if parts.len() == 2 {
-                    if let Some(address) = label_map.get(&parts[1][1..]) {
-                        Instruction::Jmp(*address)
-                    } else {
-                        println!("{:?}", label_map);
-                        panic!("Invalid Label: {}", parts[1]);
-                    }
+                if parts.len() == 3 {
+                    //     // if let Some(address) = label_map.get(&parts[1][1..]) {
+                    //     //     Instruction::Jmp(*address)
+                    //     // } else {
+                    //     //     println!("{:?}", label_map);
+                    //     //     panic!("Invalid Label: {}", parts[1]);
+                    //     // }
+                    Instruction::Jmp(Reg::from_str(parts[1]), Reg::from_str(parts[2]))
                 } else {
                     panic!("Invalid Jmp: {}", instr);
+                }
+            }
+            "beq" => {
+                if parts.len() == 4 {
+                    Instruction::Beq(
+                        Reg::from_str(parts[1]),
+                        Reg::from_str(parts[2]),
+                        Reg::from_str(parts[3]),
+                    )
+                } else {
+                    panic!("Invalid Beq: {}", instr);
+                }
+            }
+            "bne" => {
+                if parts.len() == 4 {
+                    Instruction::Bne(
+                        Reg::from_str(parts[1]),
+                        Reg::from_str(parts[2]),
+                        Reg::from_str(parts[3]),
+                    )
+                } else {
+                    panic!("Invalid Bne: {}", instr);
                 }
             }
             _ => panic!("Unsupported instruction: {}", parts[0]),
@@ -131,7 +156,13 @@ impl Instruction {
             Instruction::Ld(reg0, reg1, reg2) => {
                 reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b00100
             }
-            Instruction::Jmp(imm) => imm_get_bits(imm) | 0b10000,
+            Instruction::Jmp(reg1, reg2) => reg1.get_bits(1) | reg2.get_bits(2) | 0b10000,
+            Instruction::Beq(reg0, reg1, reg2) => {
+                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b11000
+            }
+            Instruction::Bne(reg0, reg1, reg2) => {
+                reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b01000
+            }
         };
         // println!("{:#018b} {:#06X}, {:05}", instr, instr, instr);
         return instr;

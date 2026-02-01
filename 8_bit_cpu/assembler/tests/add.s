@@ -9,7 +9,9 @@ mov r4, #31
 and r5, r3, r4
 or r6, r3, r4
 mov r1, #255
+mov r6, #0
+mov r7 #12
 LOOP:
     add r0, r0, r0
     sub r1, r1, r0
-    jmp @LOOP
+    beq r6, r6, r7
