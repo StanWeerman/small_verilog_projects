@@ -1,5 +1,5 @@
 module ins_mem(a,d_out);
-    input [7:0]a;
+    input [15:0]a;
     output [15:0]d_out;
     reg [15:0] memory [0:65535];
 
