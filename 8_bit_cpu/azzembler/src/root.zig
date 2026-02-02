@@ -10,13 +10,18 @@ pub const Assembler = struct {
         FileNotFound,
     };
 
+    const Flags = struct {
+        v: bool,
+        d: bool,
+    };
+
     allocator: Allocator,
 
     asm_file: std.fs.File,
     bin_file: std.fs.File,
     v_file: std.fs.File,
 
-    v: bool,
+    flags: Flags,
 
     pub fn init(allocator: Allocator, argv: [][*:0]u8) !Self {
         const count = std.os.argv.len;
@@ -26,16 +31,23 @@ pub const Assembler = struct {
         } else {
             std.debug.print("Usage: azzembler program.s\n", .{});
         }
-        var verilog = false;
-        if (count == 3) {
-            const flag: [:0]const u8 = std.mem.span(argv[2]);
-            if (!std.mem.eql(u8, "-v", flag)) {
-                return AssemblerError.BadCommandLine;
+        var flags: Flags = .{ .v = false, .d = false };
+        if (count > 2 and count < 5) {
+            for (argv[2..]) |flag_str| {
+                const flag: [:0]const u8 = std.mem.span(flag_str);
+                if (std.mem.eql(u8, "-v", flag)) {
+                    flags.v = true;
+                } else if (std.mem.eql(u8, "-d", flag)) {
+                    flags.d = true;
+                } else {
+                    return AssemblerError.BadCommandLine;
+                }
             }
-            verilog = true;
         }
         cwd.deleteTree("build") catch |err| {
-            std.debug.print("Error: {any}\n", .{err});
+            if (flags.d) {
+                std.debug.print("Error: {any}\n", .{err});
+            }
         };
 
         try cwd.makeDir("build");
@@ -56,16 +68,18 @@ pub const Assembler = struct {
         const bin_file = try cwd.createFile(bin_path, .{});
         const v_file = try cwd.createFile(v_path, .{});
 
-        std.debug.print("Assembling {s}\n", .{asm_path});
-        std.debug.print("Writing to {s}\n", .{bin_path});
-        std.debug.print("Writing to {s}\n", .{v_path});
+        if (flags.d) {
+            std.debug.print("Assembling {s}\n", .{asm_path});
+            std.debug.print("Writing to {s}\n", .{bin_path});
+            std.debug.print("Writing to {s}\n", .{v_path});
+        }
 
         return Self{
             .allocator = allocator,
             .asm_file = asm_file,
             .bin_file = bin_file,
             .v_file = v_file,
-            .v = verilog,
+            .flags = flags,
         };
     }
 
