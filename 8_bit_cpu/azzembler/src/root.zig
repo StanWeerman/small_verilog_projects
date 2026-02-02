@@ -5,48 +5,78 @@ pub const Assembler = struct {
     const Self = @This();
     const cwd = std.fs.cwd();
 
+    const AssemblerError = error{
+        BadCommandLine,
+        FileNotFound,
+    };
+
     allocator: Allocator,
 
     asm_file: std.fs.File,
     bin_file: std.fs.File,
     v_file: std.fs.File,
 
-    pub fn init(allocator: Allocator, file_path: [*:0]u8) !Self {
+    v: bool,
+
+    pub fn init(allocator: Allocator, argv: [][*:0]u8) !Self {
+        const count = std.os.argv.len;
+
+        if (count != 2 and count != 3) {
+            return AssemblerError.BadCommandLine;
+        } else {
+            std.debug.print("Usage: azzembler program.s\n", .{});
+        }
+        var verilog = false;
+        if (count == 3) {
+            const flag: [:0]const u8 = std.mem.span(argv[2]);
+            if (!std.mem.eql(u8, "-v", flag)) {
+                return AssemblerError.BadCommandLine;
+            }
+            verilog = true;
+        }
         cwd.deleteTree("build") catch |err| {
             std.debug.print("Error: {any}\n", .{err});
-            // if (err == std.fs.Dir.DeleteTreeError)
         };
 
         try cwd.makeDir("build");
 
-        const asm_path: [:0]const u8 = std.mem.span(file_path);
-        const bin_path = try std.fs.path.join(allocator, &[_][]const u8{ "build/", std.fs.path.replaceExt(allocator, std.fs.path.basename(asm_path), ".bin") });
-        const v_path = try std.fs.path.join(allocator, &[_][]const u8{ "build/", std.fs.path.replaceExt(allocator, std.fs.path.basename(asm_path), ".v") });
+        const asm_path: [:0]const u8 = std.mem.span(argv[1]);
+        const base = std.fs.path.stem(std.fs.path.basename(asm_path));
+
+        const bin_base = try std.mem.concat(allocator, u8, &.{ base, ".bin" });
+        defer allocator.free(bin_base);
+        const bin_path = try std.fs.path.join(allocator, &[_][]const u8{ "build/", bin_base });
+        defer allocator.free(bin_path);
+        const v_base = try std.mem.concat(allocator, u8, &.{ base, ".v" });
+        defer allocator.free(v_base);
+        const v_path = try std.fs.path.join(allocator, &[_][]const u8{ "build/", v_base });
+        defer allocator.free(v_path);
 
         const asm_file = try cwd.openFile(asm_path, .{ .mode = .read_only });
-        const bin_file = try cwd.openFile(bin_path, .{ .mode = .read_only });
-        const v_file = try cwd.openFile(v_path, .{ .mode = .read_only });
+        const bin_file = try cwd.createFile(bin_path, .{});
+        const v_file = try cwd.createFile(v_path, .{});
 
-        std.debug.print("Assembling {s}\n", .{asm_file});
-        allocator.free(bin_path);
-        allocator.free(v_path);
+        std.debug.print("Assembling {s}\n", .{asm_path});
+        std.debug.print("Writing to {s}\n", .{bin_path});
+        std.debug.print("Writing to {s}\n", .{v_path});
 
         return Self{
             .allocator = allocator,
             .asm_file = asm_file,
             .bin_file = bin_file,
             .v_file = v_file,
+            .v = verilog,
         };
     }
 
-    pub fn deinit(self: *Self) void {
+    pub fn deinit(self: *const Self) void {
         self.asm_file.close();
         self.bin_file.close();
         self.v_file.close();
     }
 
-    pub fn assemble(self: *Self) void {
-        _ = self;
+    pub fn assemble(self: *const Self) !void {
+        try self.bin_file.writeAll("Writing this line to the file\n");
     }
 };
 
