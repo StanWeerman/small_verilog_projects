@@ -15,6 +15,8 @@ pub const Assembler = struct {
         d: bool,
     };
 
+    const Instruction = @import("instruction.zig").Instruction;
+
     allocator: Allocator,
 
     asm_file: std.fs.File,
@@ -90,7 +92,49 @@ pub const Assembler = struct {
     }
 
     pub fn assemble(self: *const Self) !void {
-        try self.bin_file.writeAll("Writing this line to the file\n");
+        // try self.bin_file.writeAll("Writing this line to the file\n");
+
+        var instructions: std.ArrayList(*Instruction) = .empty;
+        defer instructions.deinit(self.allocator);
+
+        var label_map: std.AutoHashMap(usize, []u8) = .init(self.allocator);
+        defer label_map.deinit();
+
+        var buf: [1024]u8 = undefined;
+
+        var asm_reader = self.asm_file.reader(&buf);
+
+        const asm_in: *std.io.Reader = &asm_reader.interface;
+
+        var address: usize = 0;
+        while (asm_in.takeDelimiter('\n') catch |err| {
+            std.log.err("Failed to read line: {s}", .{@errorName(err)});
+            return;
+        }) |bare_line| {
+            var line = std.mem.trim(u8, bare_line, "\r");
+
+            if (std.mem.count(u8, line, ":") == 1) {
+                try label_map.put(address, try self.allocator.dupe(u8, line[0 .. line.len - 1]));
+            } else {
+                const instruction = Instruction.impl_map.get("sub");
+
+                std.debug.print("{s}\n", .{@tagName(instruction.?)});
+                address += 1;
+            }
+            if (self.flags.d) {
+                std.debug.print("{s}\n", .{line});
+            }
+        }
+
+        // Free Labels!
+        var label_iter = label_map.valueIterator();
+        while (label_iter.next()) |label| {
+            self.allocator.free(label.*);
+        }
+        // Free Instructions!
+        // while (instructions.items) |instruction| {
+        //     self.allocator.destroy(instruction);
+        // }
     }
 };
 
