@@ -2,6 +2,7 @@ MAIN:
 mov r1, #0
 mov r2, #1
 mov r0, #5
+nop
 st r0, r1, r2
 ld r2, r1, r2
 mov r3, #241

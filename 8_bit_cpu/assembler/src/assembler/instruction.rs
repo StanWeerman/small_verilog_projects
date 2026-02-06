@@ -14,6 +14,7 @@ pub enum Instruction {
     Jmp(Reg, Reg),
     Beq(Reg, Reg, Reg),
     Bne(Reg, Reg, Reg),
+    Nop,
 }
 
 impl Instruction {
@@ -128,6 +129,13 @@ impl Instruction {
                     panic!("Invalid Bne: {}", instr);
                 }
             }
+            "nop" => {
+                if parts.len() == 1 {
+                    Instruction::Nop
+                } else {
+                    panic!("Invalid Nop: {}", instr);
+                }
+            }
             _ => panic!("Unsupported instruction: {}", parts[0]),
         }
     }
@@ -163,6 +171,7 @@ impl Instruction {
             Instruction::Bne(reg0, reg1, reg2) => {
                 reg0.get_bits(0) | reg1.get_bits(1) | reg2.get_bits(2) | 0b01000
             }
+            Instruction::Nop => 0b0000000000000000,
         };
         // println!("{:#018b} {:#06X}, {:05}", instr, instr, instr);
         return instr;
