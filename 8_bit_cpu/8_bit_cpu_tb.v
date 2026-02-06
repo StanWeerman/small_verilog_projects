@@ -175,7 +175,7 @@ module cpu_tb;
 
       $dumpvars(0, cpu_tb);
       // $dumpall;
-      $dumpfile("dump.vcd");
+      // $dumpfile("dump.vcd");
     end
 
 endmodule;

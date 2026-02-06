@@ -2,7 +2,8 @@ module pc (input en,
             input clk,
             input rstb,
             input jmp,
-            input [7:0] jmp_address,
+            input branch,
+            input [15:0] jmp_address,
             output reg [15:0] pco);
 
     always @ (posedge clk, negedge rstb) begin
@@ -13,6 +14,7 @@ module pc (input en,
         else if (en)
             begin
                 if (jmp) pco <= jmp_address;
+                else if (branch) pco <= jmp_address;
                 else pco <= pco + 1;
             end
     end
@@ -77,8 +79,9 @@ module alu_cu(input [6:0] control);
 endmodule
 
 module cu(input [4:0] control);
-    wire jump = alu ? 0 : control[4];
+    wire jump = (alu|branch) ? 0 : control[4];
     wire branch = alu ? 0 : control[3];
+    wire beq_bne_b = control[4];
     wire mem_rd = alu ? 0 : control[2];
     wire mem_wr = alu ? 0 : control[1];
     wire alu = control[0];
@@ -92,6 +95,8 @@ module cpu (input clk, input rst, input [15:0] instruction, input en, input [7:0
     wire [7:0] reg_0_data, reg_1_data, reg_2_data;
     reg [7:0] write_data;
     assign data_out = write_data;
+
+    wire branch_success = cu.branch & (cu.beq_bne_b ? (reg_0_data == 0) : (reg_0_data != 0));
 
     cu cu(.control(instruction[4:0]));
 
@@ -112,7 +117,7 @@ module cpu (input clk, input rst, input [15:0] instruction, input en, input [7:0
         end
     end
 
-    pc pc (.en(en), .clk(clk), .rstb(~rst), .jmp(cu.jump), .jmp_address(instruction[12:5]),.pco());
+    pc pc (.en(en), .clk(clk), .rstb(~rst), .jmp(cu.jump), .branch(branch_success), .jmp_address(address),.pco());
 
     // wire mem_read = instruction[4] & instruction[0];
     // wire mem_write = instruction[4] & ~instruction[0];
