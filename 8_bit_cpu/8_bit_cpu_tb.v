@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module cpu_tb;
 
     integer output_file;
