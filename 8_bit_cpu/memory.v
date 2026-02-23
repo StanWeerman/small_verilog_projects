@@ -16,7 +16,7 @@ module ram(clk, a, d_in, d_out, read, write, stall);
         end
     end
 
-    wire test = memory[1];
+    wire [7:0] test = memory[1];
 
     parameter WAVE = 0;
     // genvar idx;

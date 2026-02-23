@@ -3,6 +3,7 @@ rst
 en
 instruction
 pco
+reg_0_data
 reg_1_data
 reg_2_data
 address

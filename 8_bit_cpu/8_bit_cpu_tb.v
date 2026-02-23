@@ -159,13 +159,13 @@ module cpu_tb;
     //     end
     // end
     always@(negedge clk) begin
-        $fdisplay (output_reg_file, "-%4t: |0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|", $time, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
+        // $fdisplay (output_reg_file, "-%4t: |0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|", $time, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
     end
 
     always @ (posedge clk) begin
         // if (from_file) begin
         // if (en) begin
-            $fdisplay (output_reg_file, "+%4t: |0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|0x%00h|", $time, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
+            $fdisplay (output_reg_file, "%10d: |%00h|%00h|%00h|%00h|%00h|%00h|%00h|%00h|", clk_count, cpu.register_file.reg_file[0], cpu.register_file.reg_file[1], cpu.register_file.reg_file[2], cpu.register_file.reg_file[3], cpu.register_file.reg_file[4], cpu.register_file.reg_file[5], cpu.register_file.reg_file[6], cpu.register_file.reg_file[7]);
             $fdisplay (output_file, "%4t: |$0=0b%16b|pc=0x%00h|en=%1b", $time, instruction, cpu.pc.pco, en);
         // end
         ->end_clk;
