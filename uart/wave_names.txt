@@ -1,0 +1,11 @@
+clk
+rst
+rx_bit
+rx_byte
+rx_done
+uart_rx.state
+tx_bit
+tx_byte
+tx_done
+tx_go
+uart_tx.state
