@@ -46,6 +46,8 @@ module uart_tb;
         init();
         test_byte(8'hff);
         #100;
+        test_byte(8'h11);
+        #100;
         $finish();
     end
 
